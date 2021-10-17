@@ -1,43 +1,39 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 describe ArticlesController do
   describe '#index' do
-
-    subject { get :index }
-
-
-    it 'should return success response' do
-      subject
+    it 'returns a success response' do
+      get :index
       expect(response).to have_http_status(:ok)
     end
 
-    it 'should return proper json' do
-      create_list :article, 2
-      subject
-      expect(json_data.length).to eq(2)
-      Article.recent.each_with_index do |article, index|
-        expect(json_data[index]['attributes']).to eq({
-          "title" => article.title,
-          "content" => article.content ,
-          "slug" => article.slug,
-          })
+    it 'returns a proper JSON' do
+      article = create :article
+      get :index
+      expect(json_data.length).to eq(1)
+      expected = json_data.first
+      aggregate_failures do
+        expect(expected[:id]).to eq(article.id.to_s)
+        expect(expected[:type]).to eq('article')
+        expect(expected[:attributes]).to eq(
+          title: article.title,
+          content: article.content,
+          slug: article.slug
+        )
       end
     end
 
-    it 'should return articles in proper order' do
-      old_article = create :article
-      newer_article = create :article
-      subject
-      expect(json_data.first['id']).to eq(newer_article.id.to_s)
-      expect(json_data.last['id']).to eq(old_article.id.to_s)
-    end
-
-    it 'should paginate results' do
-      create_list :article, 3
-      get :index, params: { page: 2, per_page: 1}
-      expect(json_data.length).to eq 1
-      expected_article = Article.recent.second.id.to_s
-      expect(json_data.first['id']).to eq(expected_article)
+    it 'returns articles in the proper order' do
+      older_article =
+        create(:article, created_at: 1.hour.ago)
+      recent_article = create(:article)
+      get :index
+      ids = json_data.map { |item| item[:id].to_i }
+      expect(ids).to(
+        eq([recent_article.id, older_article.id])
+      )
     end
   end
 end
