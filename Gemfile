@@ -10,6 +10,7 @@ gem 'octokit'
 
 gem 'bootsnap', '>= 1.1.0', require: false
 gem 'jsom-pagination'
+gem 'jsonapi_errors_handler'
 gem 'puma', '~> 3.11'
 gem 'rails', '~> 5.2.4', '>= 5.2.4.3'
 gem 'sqlite3'
