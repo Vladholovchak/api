@@ -1,12 +1,19 @@
+# frozen_string_literal: true
+
 class ArticlesController < ApplicationController
+  include Paginable
+
   def index
-    articles = Article.recent.
-    page(params[:page]).
-    per(params[:per_page])
-    render json: articles
+    paginated = paginate(Article.recent)
+    render_collection(paginated)
   end
 
   def show
-    render json: 'article 1'
+    article = Article.find(params[:id])
+    render json: serializer.new(article)
+  end
+
+  def serializer
+    ArticleSerializer
   end
 end
