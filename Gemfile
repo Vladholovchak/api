@@ -15,8 +15,11 @@ gem 'puma', '~> 3.11'
 gem 'rails', '~> 5.2.4', '>= 5.2.4.3'
 gem 'sqlite3'
 
-gem 'factory_bot_rails'
-gem 'rspec-rails'
+group :development, :test do
+  gem 'factory_bot_rails'
+  gem 'pry-rails'
+  gem 'rspec-rails'
+end
 
 group :development do
   gem 'listen', '>= 3.0.5', '< 3.2'

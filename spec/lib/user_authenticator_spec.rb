@@ -1,19 +1,27 @@
-require 'rails_helper'
+# frozen_string_literal: true
 
-describe 'UserAuthenticator' do
-  describe 'perform' do
-    let(:authenticator) { authenticator = UserAuthenticator.new('sample code') }
-    subject{ authenticator.perform }
-    context 'when code is incorrrect' do
-      let (:error) { double('Sawyer::Resource', error: 'bad_verification_code') }
-      before do
-        allow_any_instance_of(Octokit::Client).to receive(
-          :exchange_code_for_token).and_return(error)
+require 'pry'
+describe UserAuthenticator do
+  describe '#perform' do
+    let(:authenticator) { described_class.new('sample_code') }
+
+    subject { authenticator.perform }
+
+    context 'when code is incorrect' do
+      let(:error) do
+        double('Sawyer::Resource', error: 'bad_verification_code')
       end
 
-      it 'should raise an error' do
-        expect{ subject }.to raise_error(
-          UserAuthenticator::AuthenticationError)
+      before do
+        allow_any_instance_of(Octokit::Client).to receive(
+          :exchange_code_for_token
+        ).and_return(error)
+      end
+
+      it 'raise an error' do
+        expect { subject }.to raise_error(
+          UserAuthenticator::AuthenticationError
+        )
         expect(authenticator.user).to be_nil
       end
     end
@@ -21,7 +29,7 @@ describe 'UserAuthenticator' do
     context 'when code is correct' do
       let(:user_data) do
         {
-          login: 'twiclffaf',
+          login: 'jsmith1',
           url: 'http://example.com',
           avatar_url: 'http://example.com/avatar',
           name: 'John Smith'
@@ -30,22 +38,29 @@ describe 'UserAuthenticator' do
 
       before do
         allow_any_instance_of(Octokit::Client).to receive(
-          :exchange_code_for_token).and_return('validaccesstoken')
+          :exchange_code_for_token
+        ).and_return('validaccesstoken')
+
         allow_any_instance_of(Octokit::Client).to receive(
-          :user).and_return(user_data)
+          :user
+        ).and_return(user_data)
       end
 
-      it 'should save the user when does not exists' do
-        expect{ subject }.to change { User.count }.by(1)
+      it 'save the user when does not exist' do
+        expect { subject }.to change { User.count }.by(1)
         expect(User.last.name).to eq('John Smith')
       end
 
-      it 'should reuse already registered user' do
+      it 'reuse already registered user' do
         user = create :user, user_data
-        expect{ subject }.not_to change { User.count }
+        expect { subject }.not_to change{ User.count }
         expect(authenticator.user).to eq(user)
       end
-    end
 
+      it 'create and set user\'s access token' do
+        expect { subject }.to change { AccessToken.count }.by(1)
+        expect(authenticator.access_token).to be_present
+      end
+    end
   end
 end
