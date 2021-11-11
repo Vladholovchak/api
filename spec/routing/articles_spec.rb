@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe '/articles routes' do
@@ -8,5 +10,18 @@ RSpec.describe '/articles routes' do
         route_to('articles#index', page: { 'number' => '3' })
       )
     end
+  end
+
+  it 'route to articles create' do
+    expect(post('/articles')).to route_to('articles#create')
+  end
+
+  it 'route to articles update' do
+    expect(put('/articles/1')).to route_to('articles#update', id: '1')
+    expect(patch('/articles/1')).to route_to('articles#update', id: '1')
+  end
+
+  it 'route to articles destroy' do
+    expect(delete('/articles/1')).to route_to('articles#destroy', id: '1')
   end
 end
